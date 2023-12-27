@@ -31,17 +31,20 @@ ipcMain.on('ipc-example', async (event, arg) => {
   event.reply('ipc-example', msgTemplate('pong'));
 });
 
-ipcMain.on('capture', (e, data) => {
-  desktopCapturer.getSources({ types: ['screen'] }).then(async sources => {
-    const screen1 = sources.find((source) => source.name === 'Screen 1');
+ipcMain.on('capture', () => {
+  desktopCapturer
+    .getSources({ types: ['screen'] })
+    .then(async (sources) => {
+      const screen1 = sources.find((source, i) => i === 0);
 
-    if (screen1) {
-      console.log('found', screen1.id);
-      mainWindow?.webContents.send('SET_SOURCE', screen1.id);
-      return;
-    }
-  });
-})
+      if (screen1) {
+        mainWindow?.webContents.send('SET_SOURCE', screen1.id);
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');

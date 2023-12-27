@@ -1,38 +1,39 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
 import './App.css';
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 
 export default function App() {
-  const video: React.MutableRefObject<HTMLVideoElement> = useRef<HTMLVideoElement>();
+  const video: React.MutableRefObject<HTMLVideoElement> =
+    useRef<HTMLVideoElement>();
+
   const handleStream = (stream: MediaStream) => {
     if (video.current) {
       video.current.srcObject = stream;
-      video.current.onloadedmetadata = (e) => video.current.play()
+      video.current.onloadedmetadata = () => video.current.play();
     }
   };
 
-  useEffect(() => {
-    window.electron.ipcRenderer.on('SET_SOURCE', async (event, sourceId) => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: {
-            mandatory: {
-              chromeMediaSource: 'desktop',
-              chromeMediaSourceId: sourceId,
-            }
-          }
-        });
+  const test = async (sourceId) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          mandatory: {
+            chromeMediaSource: 'desktop',
+            chromeMediaSourceId: sourceId,
+          },
+        },
+      });
 
-        console.log('stream', stream);
+      handleStream(stream);
+    } catch (err) {
+      console.log('err');
+    }
+  };
 
-        handleStream(stream);
-      } catch (err) {
-        console.log(err);
-      }
-    });
-  }, []);
+  window.electron.ipcRenderer.on('SET_SOURCE', (sourceId) => {
+    test(sourceId);
+    console.log('azerazer azeraz er');
+  });
 
   return (
     <div>
